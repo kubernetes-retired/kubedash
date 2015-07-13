@@ -1,0 +1,21 @@
+{
+  "name": "kubedash",
+  "version": "0.0.0",
+  "homepage": "https://github.com/GoogleCloudPlatform/kubedash",
+  "authors": [
+    "Alex Mavrogiannis <almavrog@google.com>"
+  ],
+  "license": "Apache 2.0",
+  "dependencies": {
+    "jquery": "~2.1.4",
+    "angular": "~1.4.2",
+    "nvd3": "~1.8.1",
+    "angular-nvd3": "~0.1.1",
+    "angular-route": "~1.4.2",
+    "bootstrap": "~3.3.5"
+  },
+  "resolutions": {
+    "nvd3": "~v1.1.15-beta",
+    "d3": "~3.3.13"
+  }
+}
