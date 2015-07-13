@@ -1,7 +1,7 @@
 # kubedash
-Analytics dashboard for [Kubernetes](http://github.com/GoogleCloudPlatform/kubernetes)
+Performance analytics dashboard for [Kubernetes](http://github.com/GoogleCloudPlatform/kubernetes)
 
-The goal of Kubedash it to allow the user or an administrator of a Kubernetes cluster to easily verify and understand the state of the cluster through intuitive visualizations of aggregated metrics, derived stats and event patterns. This is not a kubernetes UI. Instead, kubedash uses multiple sources of information to summarize and provide high-level analytic information to users and admin.
+The goal of Kubedash it to allow the user or an administrator of a Kubernetes cluster to easily verify and understand the performance of a cluster and jobs running within it through intuitive visualizations of aggregated metrics, derived stats and event patterns. It is not intended to be a general-purpose Kubernetes UI. Instead, kubedash uses multiple sources of information to summarize and provide high-level analytic information to users and admin.
 
 Some of the use-cases are:
 - Cluster and node utilization by resources
