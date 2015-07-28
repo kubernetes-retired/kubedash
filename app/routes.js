@@ -13,53 +13,52 @@
 // limitations under the License.
 
 
-angular.module('kubedash').config(['$locationProvider', '$routeProvider', 
-        function($locationProvider, $routeProvider) {
-  // html5Mode allows angular to edit the browser history, 
-  // thus allowing back/forward transitions for a single-page app
-  $locationProvider.html5Mode(true);
+angular.module('kubedash').config(['$locationProvider', '$routeProvider', '$provide',
+    function($locationProvider, $routeProvider, $provide) {
 
-  $routeProvider
-      // route for the Cluster page
+      // The sniffer decorator enables hashbang compatibility in older browsers,
+      // while html5 history rewriting mode is enabled.
+      $provide.decorator('$sniffer', function($delegate) {
+        $delegate.history = false;
+        return $delegate;
+      });
+      $locationProvider.html5Mode(true).hashPrefix('!');
+
+      $routeProvider
+          // route for the Cluster page
       .when('/', {
         templateUrl : 'pages/cluster.html',
         controller : 'clusterUtil',
       })
-
       // route for the Nodes page
       .when('/nodes/', {
         templateUrl : 'pages/nodes.html',
         controller : 'allNodes',
       })
-	  
       // route for each individual Node page
       .when('/node/:name', {
         templateUrl : 'pages/node.html',
         controller : 'nodeUtil',
       })
-
       // route for the Namespaces page
       .when('/namespaces/', {
         templateUrl : 'pages/namespaces.html',
         controller : 'allNamespaces',
       })
-
       // route for each individual Namespace Page
       .when('/namespace/:name', {
         templateUrl : 'pages/namespace.html',
         controller : 'namespaceUtil',
       })
-
       .otherwise({
         redirectTo: '/'
       });
-}]);
+    }]);
 
 
 angular.module('kubedash').run(function($rootScope) {
   $rootScope.$on('$routeChangeStart', function(event, next, current) {
-
-    // Performs cleanup of all nvd3 charts before route change.
+    // Performs cleanup of all nvd3 charts during routing changes.
     if (typeof(current) !== 'undefined'){
       d3.selectAll('svg').remove();
       nv.charts = {};
@@ -71,7 +70,7 @@ angular.module('kubedash').run(function($rootScope) {
     }
   });
 
-  // Stubs for global Alerts under $rootScope
+  // Initial version of notification stubs, bound to $rootScope
   $rootScope.alerts = []
 
   $rootScope.addAlert = function (message) {
@@ -81,5 +80,4 @@ angular.module('kubedash').run(function($rootScope) {
   $rootScope.closeAlert = function(index) {
     $rootScope.alerts.splice(index, 1);
   }
-
 });

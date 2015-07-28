@@ -14,7 +14,7 @@
 
 'use strict';
 
-// clusterUtil controls the utilization chart of the Cluster page
+// clusterUtil controls the utilization chart and derived stats of the Cluster page
 angular.module('kubedash').controller('clusterUtil', function($scope, $controller) {
   $scope.memUsage = 'api/v1/model/metrics/memory-usage?start=';
   $scope.memLimit = 'api/v1/model/metrics/memory-limit?start=';
@@ -23,7 +23,7 @@ angular.module('kubedash').controller('clusterUtil', function($scope, $controlle
   $controller('UtilizationViewController', {$scope: $scope});
 });
 
-// nodeUtil controls the utilization chart of the Node page
+// nodeUtil controls the utilization chart and derived stats of the Node page
 angular.module('kubedash').controller('nodeUtil', function($scope, $controller, $routeParams) {
   $scope.hostname = $routeParams.name;
   $scope.memUsage = 'api/v1/model/nodes/' + $scope.hostname + '/metrics/memory-usage?start=';
@@ -33,7 +33,7 @@ angular.module('kubedash').controller('nodeUtil', function($scope, $controller, 
   $controller('UtilizationViewController', {$scope: $scope});
 });
 
-// namespaceUtil controls the utilization chart of the Namespaces page
+// namespaceUtil controls the utilization chart and derived stats of the Namespaces page
 angular.module('kubedash').controller('namespaceUtil',  function($scope, $controller, $routeParams) {
   $scope.ns = $routeParams.name;
   $scope.memUsage = 'api/v1/model/namespaces/' + $scope.ns + '/metrics/memory-usage?start=';
@@ -61,6 +61,7 @@ angular.module('kubedash').controller('allNodes', ['$scope', '$http', function($
 }]);
 
 // allNamespaces controls the view of the namespace selection page
+// TODO(afein): sort by usage/utilization
 angular.module('kubedash').controller('allNamespaces', function($scope, $http) {
   $scope.items = [];
   var allNamespaces = "api/v1/model/namespaces/";
