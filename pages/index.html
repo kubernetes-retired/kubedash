@@ -16,7 +16,6 @@
     <script type=text/javascript src="static/js/bootstrap.min.js"></script>
     <script type=text/javascript src="static/js/angular.min.js"></script>
     <script type=text/javascript src="static/js/angular-route.min.js"></script>
-    <script type=text/javascript src="static/js/ui-bootstrap.min.js"></script>
     <script type=text/javascript src="static/js/d3.min.js"></script>
     <script type=text/javascript src="static/js/nv.d3.min.js"></script>
     <script type=text/javascript src="static/js/angular-nvd3.js"></script>
@@ -33,7 +32,7 @@
           <div class="col-xs-12">
             <a href="/"><img src="http://kubernetes.io/img/desktop/nav_logo.svg" alt="Kubernetes by Google" id="logo-desktop" /></a>
             <nav>
-              <a href="/" class="active" >
+              <a href="/" class="active" id="clusterbutton">
                 <div>
                   Cluster
                 </div>
@@ -42,7 +41,7 @@
                 </div>
               </a>
 
-              <a href="#nodes">
+              <a href="#!nodes" id="nodesbutton">
                 <div>
                   Nodes
                 </div>
@@ -51,7 +50,7 @@
                 </div>
               </a>
 
-              <a href="#namespaces">
+              <a href="#!namespaces" id="namespacesbutton">
                 <div>
                   Namespaces
                 </div>
@@ -60,14 +59,6 @@
                 </div>
               </a>
 
-              <a href="#pod">
-                <div>
-                  Pods
-                </div>
-                <div class="underline">
-                  &nbsp;
-                </div>
-              </a>
             </nav>
           </div>
         </div>
@@ -81,5 +72,14 @@
       <div ng-view></div>
     </div>
 
+    <footer class="text-center">
+      <div class="container">
+        <div class="row">
+          <div class="col-xs-12">
+            <h5> Help make Kubedash better by filling out the <em><a href="https://docs.google.com/forms/d/1Vr2uokygffjiwdlfLdG0uGFAFoh_PfF4HlTCCpMskX0/viewform">feedback form</a></em></h5>
+          </div>
+        </div>
+      </div>
+    </footer>
   </body>
 </html>

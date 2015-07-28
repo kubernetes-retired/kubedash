@@ -1,0 +1,100 @@
+<div class="row panel panel-info">
+  <div class="panel-heading">
+    <h5 class="panel-title">Memory Usage (MB)</h5>
+  </div>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Minute</th>
+        <th>Hour</th>
+        <th>Day</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <th scope="row">Average</th>
+          <th>{{ mem.Minute.Average }}</th>
+          <th>{{ mem.Hour.Average }}</th>
+          <th>{{ mem.Day.Average }}</th>
+        </tr>
+        <tr>
+          <th scope="row">90%</th>
+          <th>{{ mem.Minute.Ninetieth }}</th>
+          <th>{{ mem.Hour.Ninetieth }}</th>
+          <th>{{ mem.Day.Ninetieth }}</th>
+        </tr>
+        <tr>
+          <th scope="row">Max</th>
+          <th>{{ mem.Minute.Max }}</th>
+          <th>{{ mem.Hour.Max }}</th>
+          <th>{{ mem.Day.Max }}</th>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="row panel panel-danger">
+    <div class="panel-heading">
+      <h5 class="panel-title">CPU Usage (millicores)</h5>
+    </div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Minute</th>
+          <th>Hour</th>
+          <th>Day</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">Average</th>
+          <th>{{ cpu.Minute.Average }}</th>
+          <th>{{ cpu.Hour.Average }}</th>
+          <th>{{ cpu.Day.Average }}</th>
+        </tr>
+        <tr>
+          <th scope="row">90%</th>
+          <th>{{ cpu.Minute.Ninetieth }}</th>
+          <th>{{ cpu.Hour.Ninetieth }}</th>
+          <th>{{ cpu.Day.Ninetieth }}</th>
+        </tr>
+        <tr>
+          <th scope="row">Max</th>
+          <th>{{ cpu.Minute.Max }}</th>
+          <th>{{ cpu.Hour.Max }}</th>
+          <th>{{ cpu.Day.Max }}</th>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!--
+  <div class="row panel panel-success">
+    <div class="panel-heading">
+      <h5 class="panel-title">Filesystem Usage</h5>
+    </div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Minute</th>
+          <th>Hour</th>
+          <th>Day</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">Average</th>
+        </tr>
+        <tr>
+          <th scope="row">Max</th>
+        </tr>
+        <tr>
+          <th scope="row">90%</th>
+        </tr>
+      </tbody>
+    </table>
+    -->
+  </div>
