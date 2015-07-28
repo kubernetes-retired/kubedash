@@ -66,6 +66,7 @@ angular.module('kubedash').controller('ChartViewController',
             staggerLabels:true
           },
           x2Axis: {
+            axisLabel: 'Time Range Selection',
             tickFormat: function(d) {
               return d3.time.format('%X')(new Date(d));
             }
@@ -182,21 +183,43 @@ function testLimitToUsageRatio(usageLink, limitLink, $http, change_callback, nex
       });
 }
 
+// secondsToDHMS converts a number of seconds to a string
+// formatted as "3d 21h 5m 34s"
+function secondsToDHMS(totalSeconds) {
+  var days = Math.floor(totalSeconds / 86400);
+  totalSeconds %= 3600;
+  var hours = Math.floor(totalSeconds / 3600);
+  totalSeconds %= 3600;
+  var minutes = Math.floor(totalSeconds / 60);
+  var seconds = totalSeconds % 60;
+  var res = ""
+  if (days > 0) {
+    res += days.toString() + "d "
+  }
+  res += hours.toString() + "h " + minutes.toString() + "m " + seconds.toString() + "s"
+  return res
+}
+
 // pollStats appends the derived stats for cpu and memory to $scope.
 function pollStats(statsLink, $scope, $http){
   if (!$scope.run) return;
   $http.get(statsLink).success(function(data) {
-    $scope.cpu = data["cpu-usage"];
-    $scope.mem = data["memory-usage"];
-    $scope.mem.Minute.Average = Math.round($scope.mem.Minute.Average / 1048576)
-    $scope.mem.Minute.Ninetieth = Math.round($scope.mem.Minute.Ninetieth / 1048576)
-    $scope.mem.Minute.Max = Math.round($scope.mem.Minute.Max / 1048576)
-    $scope.mem.Hour.Average = Math.round($scope.mem.Hour.Average / 1048576)
-    $scope.mem.Hour.Ninetieth = Math.round($scope.mem.Hour.Ninetieth / 1048576)
-    $scope.mem.Hour.Max = Math.round($scope.mem.Hour.Max / 1048576)
-    $scope.mem.Day.Average = Math.round($scope.mem.Day.Average / 1048576)
-    $scope.mem.Day.Ninetieth = Math.round($scope.mem.Day.Ninetieth / 1048576)
-    $scope.mem.Day.Max = Math.round($scope.mem.Day.Max / 1048576)
+    if (!("uptime" in data)) {
+      // Empty Stats
+      return;
+    }
+    $scope.uptime = secondsToDHMS(data["uptime"]);
+    $scope.cpu = data["stats"]["cpu-usage"];
+    $scope.mem = data["stats"]["memory-working"];
+    $scope.mem.minute.average = Math.round($scope.mem.minute.average / 1048576)
+    $scope.mem.minute.ninetieth = Math.round($scope.mem.minute.ninetieth / 1048576)
+    $scope.mem.minute.max = Math.round($scope.mem.minute.max / 1048576)
+    $scope.mem.hour.average = Math.round($scope.mem.hour.average / 1048576)
+    $scope.mem.hour.ninetieth = Math.round($scope.mem.hour.ninetieth / 1048576)
+    $scope.mem.hour.max = Math.round($scope.mem.hour.max / 1048576)
+    $scope.mem.day.average = Math.round($scope.mem.day.average / 1048576)
+    $scope.mem.day.ninetieth = Math.round($scope.mem.day.ninetieth / 1048576)
+    $scope.mem.day.max = Math.round($scope.mem.day.max / 1048576)
     console.log($scope.mem);
   });
 }

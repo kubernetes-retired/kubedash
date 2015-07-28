@@ -50,6 +50,19 @@ angular.module('kubedash').config(['$locationProvider', '$routeProvider', '$prov
         templateUrl : 'pages/namespace.html',
         controller : 'namespaceUtil',
       })
+
+      // route for each individual Pod Page
+      .when('/namespace/:namespace/pod/:podname', {
+        templateUrl : 'pages/pod.html',
+        controller : 'podUtil',
+      })
+
+      // route for each individual Pod Container Page
+      .when('/namespace/:namespace/pod/:podname/container/:containername', {
+        templateUrl : 'pages/container.html',
+        controller : 'podContainerUtil',
+      })
+
       .otherwise({
         redirectTo: '/'
       });
