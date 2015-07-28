@@ -1,5 +1,5 @@
 /**************************************************************************
-* AngularJS-nvD3, v0.1.1; MIT License; 24/02/2015 19:26
+* AngularJS-nvD3, v1.0.0-rc; MIT License; 29/06/2015 15:12
 * http://krispo.github.io/angular-nvd3
 **************************************************************************/
 (function(){
@@ -8,7 +8,7 @@
 
     angular.module('nvd3', [])
 
-        .directive('nvd3', ['utils', function(utils){
+        .directive('nvd3', ['nvd3Utils', function(nvd3Utils){
             return {
                 restrict: 'AE',
                 scope: {
@@ -62,7 +62,15 @@
                             scope.chart.id = Math.random().toString(36).substr(2, 15);
 
                             angular.forEach(scope.chart, function(value, key){
-                                if (key === 'options' || key === 'id' || key === 'resizeHandler');
+                                if (key[0] === '_');
+                                else if ([
+                                    'clearHighlights',
+                                    'highlightPoint',
+                                    'id',
+                                    'options',
+                                    'resizeHandler',
+                                    'state'
+                                ].indexOf(key) >= 0);
 
                                 else if (key === 'dispatch') {
                                     if (options.chart[key] === undefined || options.chart[key] === null) {
@@ -72,57 +80,48 @@
                                 }
 
                                 else if ([
+                                    'bars',
+                                    'bars1',
+                                    'bars2',
+                                    'boxplot',
+                                    'bullet',
+                                    'controls',
+                                    'discretebar',
+                                    'distX',
+                                    'distY',
+                                    'interactiveLayer',
+                                    'legend',
                                     'lines',
                                     'lines1',
                                     'lines2',
-                                    'bars', // TODO: Fix bug in nvd3, nv.models.historicalBar - chart.interactive (false -> _)
-                                    'bars1',
-                                    'bars2',
-                                    'stack1',
-                                    'stack2',
                                     'multibar',
-                                    'discretebar',
                                     'pie',
                                     'scatter',
-                                    'bullet',
                                     'sparkline',
-                                    'legend',
-                                    'distX',
-                                    'distY',
-                                    'xAxis',
+                                    'stack1',
+                                    'stack2',
+                                    'sunburst',
+                                    'tooltip',
                                     'x2Axis',
-                                    'yAxis',
-                                    'yAxis1',
-                                    'yAxis2',
+                                    'xAxis',
                                     'y1Axis',
                                     'y2Axis',
                                     'y3Axis',
                                     'y4Axis',
-                                    'interactiveLayer',
-                                    'controls'
-                                ].indexOf(key) >= 0){
+                                    'yAxis',
+                                    'yAxis1',
+                                    'yAxis2'
+                                ].indexOf(key) >= 0 ||
+                                        // stacked is a component for stackedAreaChart, but a boolean for multiBarChart and multiBarHorizontalChart
+                                        (key === 'stacked' && options.chart.type === 'stackedAreaChart')) {
                                     if (options.chart[key] === undefined || options.chart[key] === null) {
                                         if (scope._config.extended) options.chart[key] = {};
                                     }
                                     configure(scope.chart[key], options.chart[key], options.chart.type);
                                 }
 
-                                else if (//TODO: need to fix bug in nvd3
-                                    (key ==='clipEdge' && options.chart.type === 'multiBarHorizontalChart')
-                                        || (key === 'clipVoronoi' && options.chart.type === 'historicalBarChart')
-                                        || (key === 'color' && options.chart.type === 'indentedTreeChart')
-                                        || (key === 'defined' && (options.chart.type === 'historicalBarChart' || options.chart.type === 'cumulativeLineChart' || options.chart.type === 'lineWithFisheyeChart'))
-                                        || (key === 'forceX' && (options.chart.type === 'multiBarChart' || options.chart.type === 'discreteBarChart' || options.chart.type === 'multiBarHorizontalChart'))
-                                        || (key === 'interpolate' && options.chart.type === 'historicalBarChart')
-                                        || (key === 'isArea' && options.chart.type === 'historicalBarChart')
-                                        || (key === 'size' && options.chart.type === 'historicalBarChart')
-                                        || (key === 'stacked' && options.chart.type === 'stackedAreaChart')
-                                        || (key === 'values' && options.chart.type === 'pieChart')
-                                        || (key === 'xScale' && options.chart.type === 'scatterChart')
-                                        || (key === 'yScale' && options.chart.type === 'scatterChart')
-                                        || (key === 'x' && (options.chart.type === 'lineWithFocusChart' || options.chart.type === 'multiChart'))
-                                        || (key === 'y' && (options.chart.type === 'lineWithFocusChart' || options.chart.type === 'multiChart'))
-                                    );
+                                //TODO: need to fix bug in nvd3
+                                else if ((key === 'xTickFormat' || key === 'yTickFormat') && options.chart.type === 'lineWithFocusChart');
 
                                 else if (options.chart[key] === undefined || options.chart[key] === null){
                                     if (scope._config.extended) options.chart[key] = value();
@@ -144,8 +143,10 @@
                             if (options['styles'] || scope._config.extended) configureStyles();
 
                             nv.addGraph(function() {
+                                // Remove resize handler. Due to async execution should be placed here, not in the clearElement
+                                if (scope.chart.resizeHandler) scope.chart.resizeHandler.clear();
                                 // Update the chart when window resizes
-                                scope.chart.resizeHandler = utils.windowResize(function() { scope.chart.update(); });
+                                scope.chart.resizeHandler = nv.utils.windowResize(function() { scope.chart.update && scope.chart.update(); });
                                 return scope.chart;
                             }, options.chart['callback']);
                         },
@@ -153,22 +154,18 @@
                         // Update chart with new data
                         updateWithData: function (data){
                             if (data) {
-                                scope.options.chart['transitionDuration'] = +scope.options.chart['transitionDuration'] || 250;
+                                // TODO this triggers one more refresh. Refactor it!
+                                scope.options.chart.transitionDuration = +scope.options.chart.transitionDuration || 250;
                                 // remove whole svg element with old data
                                 d3.select(element[0]).select('svg').remove();
 
                                 // Select the current element to add <svg> element and to render the chart in
                                 d3.select(element[0]).append('svg')
                                     .attr('height', scope.options.chart.height)
-                                    .attr('width', scope.options.chart.width)
+                                    .attr('width', scope.options.chart.width  || '100%')
                                     .datum(data)
-                                    .transition().duration(scope.options.chart['transitionDuration'])
+                                    .transition().duration(scope.options.chart.transitionDuration)
                                     .call(scope.chart);
-
-                                // Set up svg height and width. It is important for all browsers...
-                                d3.select(element[0]).select('svg')[0][0].style.height = scope.options.chart.height + 'px';
-                                d3.select(element[0]).select('svg')[0][0].style.width = scope.options.chart.width + 'px';
-                                if (scope.options.chart.type === 'multiChart') scope.chart.update(); // multiChart is not automatically updated
                             }
                         },
 
@@ -178,18 +175,19 @@
                             element.find('.subtitle').remove();
                             element.find('.caption').remove();
                             element.empty();
-                            if (scope.chart) {
-                                // clear window resize event handler
-                                if (scope.chart.resizeHandler) scope.chart.resizeHandler.clear();
 
-                                // remove chart from nv.graph list
-                                for (var i = 0; i < nv.graphs.length; i++)
-                                    if (nv.graphs[i].id === scope.chart.id) {
+                            // To be compatible with old nvd3 (v1.7.1)
+                            if (nv.graphs && scope.chart) {
+                                for(var i = nv.graphs.length - 1; i >= 0; i--) {
+                                    if(nv.graphs[i].id === scope.chart.id) {
                                         nv.graphs.splice(i, 1);
                                     }
+                                }
+                            }
+                            if (nv.tooltip && nv.tooltip.cleanup) {
+                                nv.tooltip.cleanup();
                             }
                             scope.chart = null;
-                            nv.tooltip.cleanup();
                         },
 
                         // Get full directive scope
@@ -200,24 +198,24 @@
                     function configure(chart, options, chartType){
                         if (chart && options){
                             angular.forEach(chart, function(value, key){
-                                if (key === 'dispatch') {
+                                if (key[0] === '_');
+                                else if (key === 'dispatch') {
                                     if (options[key] === undefined || options[key] === null) {
                                         if (scope._config.extended) options[key] = {};
                                     }
                                     configureEvents(value, options[key]);
                                 }
-                                else if (//TODO: need to fix bug in nvd3
-                                    (key === 'xScale' && chartType === 'scatterChart')
-                                        || (key === 'yScale' && chartType === 'scatterChart')
-                                        || (key === 'values' && chartType === 'pieChart'));
                                 else if ([
-                                    'scatter',
-                                    'defined',
-                                    'options',
                                     'axis',
+                                    'clearHighlights',
+                                    'defined',
+                                    'highlightPoint',
+                                    'nvPointerEventsClass',
+                                    'options',
                                     'rangeBand',
-                                    'rangeBands'
-                                ].indexOf(key) < 0){
+                                    'rangeBands',
+                                    'scatter'
+                                ].indexOf(key) === -1) {
                                     if (options[key] === undefined || options[key] === null){
                                         if (scope._config.extended) options[key] = value();
                                     }
@@ -243,12 +241,12 @@
                     // Configure 'title', 'subtitle', 'caption'.
                     // nvd3 has no sufficient models for it yet.
                     function configureWrapper(name){
-                        var _ = utils.deepExtend(defaultWrapper(name), scope.options[name] || {});
+                        var _ = nvd3Utils.deepExtend(defaultWrapper(name), scope.options[name] || {});
 
                         if (scope._config.extended) scope.options[name] = _;
 
                         var wrapElement = angular.element('<div></div>').html(_['html'] || '')
-                            .addClass(name).addClass(_.class)
+                            .addClass(name).addClass(_.className)
                             .removeAttr('style')
                             .css(_.css);
 
@@ -263,7 +261,7 @@
 
                     // Add some styles to the whole directive element
                     function configureStyles(){
-                        var _ = utils.deepExtend(defaultStyles(), scope.options['styles'] || {});
+                        var _ = nvd3Utils.deepExtend(defaultStyles(), scope.options['styles'] || {});
 
                         if (scope._config.extended) scope.options['styles'] = _;
 
@@ -280,7 +278,7 @@
                             case 'title': return {
                                 enable: false,
                                 text: 'Write Your Title',
-                                class: 'h4',
+                                className: 'h4',
                                 css: {
                                     width: scope.options.chart.width + 'px',
                                     textAlign: 'center'
@@ -319,7 +317,7 @@
 
                     /* Event Handling */
                     // Watching on options changing
-                    scope.$watch('options', utils.debounce(function(newOptions){
+                    scope.$watch('options', nvd3Utils.debounce(function(newOptions){
                         if (!scope._config.disabled && scope._config.autorefresh) scope.api.refresh();
                     }, scope._config.debounce, true), true);
 
@@ -355,9 +353,9 @@
             };
         }])
 
-        .factory('utils', function(){
+        .factory('nvd3Utils', function(){
             return {
-                debounce: function debounce(func, wait, immediate) {
+                debounce: function(func, wait, immediate) {
                     var timeout;
                     return function() {
                         var context = this, args = arguments;
@@ -369,18 +367,6 @@
                         clearTimeout(timeout);
                         timeout = setTimeout(later, wait);
                         if (callNow) func.apply(context, args);
-                    };
-                },
-                windowResize: function(handler) {
-                    if (window.addEventListener) {
-                        window.addEventListener('resize', handler);
-                    }
-                    // return object with clear function to remove the single added callback.
-                    return {
-                        callback: handler,
-                        clear: function() {
-                            window.removeEventListener('resize', handler);
-                        }
                     };
                 },
                 deepExtend: function(dst){
