@@ -21,7 +21,7 @@
 	    "spec": {
 		"containers": [
 		    {
-			"image": "kubedash:canary",
+			"image": "gcr.io/kubedash/kubedash:latest",
 			"name": "kubedash",
 			"command": [
 			    "/kubedash"

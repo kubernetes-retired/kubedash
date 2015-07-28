@@ -16,33 +16,35 @@
 
 // clusterUtil controls the utilization chart and derived stats of the Cluster page
 angular.module('kubedash').controller('clusterUtil', function($scope, $controller) {
-  $scope.memUsage = 'api/v1/model/metrics/memory-usage?start=';
+  $scope.memUsage = 'api/v1/model/metrics/memory-working?start=';
   $scope.memLimit = 'api/v1/model/metrics/memory-limit?start=';
   $scope.cpuUsage = 'api/v1/model/metrics/cpu-usage?start=';
   $scope.cpuLimit = 'api/v1/model/metrics/cpu-limit?start=';
+  $scope.stats = 'api/v1/model/stats';
   $controller('UtilizationViewController', {$scope: $scope});
 });
 
 // nodeUtil controls the utilization chart and derived stats of the Node page
 angular.module('kubedash').controller('nodeUtil', function($scope, $controller, $routeParams) {
   $scope.hostname = $routeParams.name;
-  $scope.memUsage = 'api/v1/model/nodes/' + $scope.hostname + '/metrics/memory-usage?start=';
+  $scope.memUsage = 'api/v1/model/nodes/' + $scope.hostname + '/metrics/memory-working?start=';
   $scope.memLimit = 'api/v1/model/nodes/' + $scope.hostname + '/metrics/memory-limit?start=';
   $scope.cpuUsage = 'api/v1/model/nodes/' + $scope.hostname + '/metrics/cpu-usage?start=';
   $scope.cpuLimit = 'api/v1/model/nodes/' + $scope.hostname + '/metrics/cpu-limit?start=';
+  $scope.stats = 'api/v1/model/nodes/' + $scope.hostname + '/stats';
   $controller('UtilizationViewController', {$scope: $scope});
 });
 
 // namespaceUtil controls the utilization chart and derived stats of the Namespaces page
 angular.module('kubedash').controller('namespaceUtil',  function($scope, $controller, $routeParams) {
   $scope.ns = $routeParams.name;
-  $scope.memUsage = 'api/v1/model/namespaces/' + $scope.ns + '/metrics/memory-usage?start=';
+  $scope.memUsage = 'api/v1/model/namespaces/' + $scope.ns + '/metrics/memory-working?start=';
   $scope.memLimit = 'api/v1/model/namespaces/' + $scope.ns + '/metrics/memory-limit?start=';
   $scope.memLimitFallback = 'api/v1/model/metrics/memory-limit?start=';
   $scope.cpuUsage = 'api/v1/model/namespaces/' + $scope.ns + '/metrics/cpu-usage?start=';
   $scope.cpuLimit = 'api/v1/model/namespaces/' + $scope.ns + '/metrics/cpu-limit?start=';
   $scope.cpuLimitFallback = 'api/v1/model/metrics/cpu-limit?start=';
-
+  $scope.stats = 'api/v1/model/namespaces/' + $scope.ns + '/stats';
   $controller('UtilizationViewController', {$scope: $scope});
 });
 

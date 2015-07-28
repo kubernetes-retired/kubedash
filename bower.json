@@ -7,15 +7,14 @@
   ],
   "license": "Apache 2.0",
   "dependencies": {
-    "jquery": "~2.1.4",
-    "angular": "~1.4.2",
-    "nvd3": "~1.8.1",
-    "angular-nvd3": "~0.1.1",
-    "angular-route": "~1.4.2",
-    "bootstrap": "~3.3.5"
+    "jquery": "^2.1.4",
+    "angular": "^1.2.28",
+    "angular-nvd3": "^1.0.0",
+    "angular-route": "^1.2.28",
+    "bootstrap": "^3.3.5"
   },
   "resolutions": {
-    "nvd3": "~v1.1.15-beta",
-    "d3": "~3.3.13"
+    "nvd3": "^v1.1.15-beta",
+    "d3": "^3.3.13"
   }
 }
