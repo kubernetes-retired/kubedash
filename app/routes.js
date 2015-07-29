@@ -63,6 +63,12 @@ angular.module('kubedash').config(['$locationProvider', '$routeProvider', '$prov
         controller : 'podContainerUtil',
       })
 
+      // route for each individual Free Container Page
+      .when('/node/:hostname/freecontainer/:containername', {
+        templateUrl : 'pages/container.html',
+        controller : 'freeContainerUtil',
+      })
+
       .otherwise({
         redirectTo: '/'
       });

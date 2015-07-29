@@ -19,10 +19,10 @@
           <th>{{ mem.day.average }}</th>
         </tr>
         <tr>
-          <th scope="row">90%</th>
-          <th>{{ mem.minute.ninetieth }}</th>
-          <th>{{ mem.hour.ninetieth }}</th>
-          <th>{{ mem.day.ninetieth }}</th>
+          <th scope="row">95%</th>
+          <th>{{ mem.minute.percentile }}</th>
+          <th>{{ mem.hour.percentile }}</th>
+          <th>{{ mem.day.percentile }}</th>
         </tr>
         <tr>
           <th scope="row">Max</th>
@@ -36,7 +36,7 @@
 
   <div class="row panel panel-danger">
     <div class="panel-heading">
-      <h5 class="panel-title">CPU Usage (millicores)</h5>
+      <h5 class="panel-title">CPU Usage (milliCores)</h5>
     </div>
     <table class="table">
       <thead>
@@ -55,10 +55,10 @@
           <th>{{ cpu.day.average }}</th>
         </tr>
         <tr>
-          <th scope="row">90%</th>
-          <th>{{ cpu.minute.ninetieth }}</th>
-          <th>{{ cpu.hour.ninetieth }}</th>
-          <th>{{ cpu.day.ninetieth }}</th>
+          <th scope="row">95%</th>
+          <th>{{ cpu.minute.percentile }}</th>
+          <th>{{ cpu.hour.percentile }}</th>
+          <th>{{ cpu.day.percentile }}</th>
         </tr>
         <tr>
           <th scope="row">Max</th>

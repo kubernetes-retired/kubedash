@@ -17,9 +17,21 @@
     <br>
 
     <div class="col-lg-8 col-md-8 col-sm-8 col-lg-offset-2 col-md-offset-2 col-lg-offset-2">
-      <div class="list-group">
-        <a class="list-group-item" ng-href="namespace/{{ns}}/pod/{{podname}}/container/{{container}}" ng-repeat="container in items">{{container}}</a>
-      </div>
+      <table class="table table-hover clickable" ng-table="tableParams">
+          <tbody>
+            <tr ng-click="goTo(ctr.name);" ng-repeat="ctr in items">
+              <td data-title="'Name'" sortable="'name'">
+                {{ctr.name}}
+              </td>
+              <td data-title="'Memory Usage (MB)'" sortable="'memUsage'">
+                {{ctr.memUsage}}
+              </td>
+              <td data-title="'CPU Usage (mC)'" sortable="'cpuUsage'">
+                {{ctr.cpuUsage}}
+              </td>
+            </tr>
+          </tbody>
+        </table>
     </div>
   </div>
 </div>

@@ -7,3 +7,60 @@
     <div ng-include="'pages/entity.html'"></div>
   </div>
 </div>
+
+<div class="container text-center">
+  <div class="row panel panel-primary">
+    <div class="panel-heading">
+      <h4>Pods in <em>{{hostname}}</em></h4>
+    </div>
+    <br>
+
+    <div class="col-lg-8 col-md-8 col-sm-8 col-lg-offset-2 col-md-offset-2 col-lg-offset-2">
+      <table class="table table-hover clickable" ng-table="tableParams">
+        <tbody>
+          <tr ng-click="goTo(pod.name);" ng-repeat="pod in items">
+            <td data-title="'Name'" sortable="'name'">
+              {{pod.name}}
+            </td>
+            <td data-title="'Memory Usage (MB)'" sortable="'memUsage'">
+              {{pod.memUsage}}
+            </td>
+            <td data-title="'CPU Usage (mC)'" sortable="'cpuUsage'">
+              {{pod.cpuUsage}}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="container text-center">
+  <div class="row panel panel-primary">
+    <div class="panel-heading">
+      <h4>Free Containers in <em>{{hostname}}</em></h4>
+    </div>
+    <br>
+
+    <div ng-controller="freeContainerListing">
+      <div class="col-lg-8 col-md-8 col-sm-8 col-lg-offset-2 col-md-offset-2 col-lg-offset-2">
+        <table class="table table-hover clickable" ng-table="tableParams">
+          <tbody>
+            <tr ng-click="goTo(pod.name);" ng-repeat="pod in items">
+              <td data-title="'Name'" sortable="'name'">
+                {{pod.name}}
+              </td>
+              <td data-title="'Memory Usage (MB)'" sortable="'memUsage'">
+                {{pod.memUsage}}
+              </td>
+              <td data-title="'CPU Usage (mC)'" sortable="'cpuUsage'">
+                {{pod.cpuUsage}}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>

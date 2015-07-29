@@ -6,10 +6,21 @@
     <br>
 
     <div class="col-lg-8 col-md-8 col-sm-8 col-lg-offset-2 col-md-offset-2 col-lg-offset-2">
-      <div class="list-group">
-        <a class="list-group-item" ng-href="node/{{node}}" ng-repeat="node in items">{{node}}</a>
-      </div>
-
+      <table class="table table-hover" ng-table="tableParams">
+        <tbody>
+          <tr ng-click="goTo(node.name);" ng-repeat="node in items">
+            <td class="clickable" data-title="'Name'" sortable="'name'">
+              {{node.name}}
+            </td>
+            <td class="clickable" data-title="'Memory Usage (MB)'" sortable="'memUsage'">
+              {{node.memUsage}}
+            </td>
+            <td class="clickable" data-title="'CPU Usage (mC)'" sortable="'cpuUsage'">
+              {{node.cpuUsage}}
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
