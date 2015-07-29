@@ -112,14 +112,21 @@ angular.module('kubedash').controller('UtilizationViewController',
 
       $scope.data = [{key: 'Memory Utilization', area: true, values:[]}];
       $scope.data.push({key: 'CPU Utilization', area: true, values:[]});
+      $scope.messages = [];
 
       var memLimit = $scope.memLimit;
       var cpuLimit = $scope.cpuLimit;
 
+      // Initialize the last limit values
+      $scope.lastMemLimit = 0;
+      $scope.lastCPULimit = 0;
+
       var define_poll = function () {
         $scope.poll = function() {
-          pollUtilization($scope.memUsage, memLimit, $scope, 0, $http);
-          pollUtilization($scope.cpuUsage, cpuLimit, $scope, 1, $http);
+          pollUtilization($scope.memUsage, memLimit, $scope, 0, "lastMemLimit", $http, function(limit) {
+            return Math.round(limit / 1048576);
+          });
+          pollUtilization($scope.cpuUsage, cpuLimit, $scope, 1, "lastCPULimit", $http, function(x){return x;});
           pollStats($scope.stats, $scope, $http);
         };
       }
@@ -134,11 +141,11 @@ angular.module('kubedash').controller('UtilizationViewController',
       } 
       testLimitToUsageRatio($scope.memUsage, $scope.memLimit, $http, function() {
         memLimit = $scope.memLimitFallback;
-        $rootScope.addAlert("memory limit");
+        $scope.messages.push("This entity does not have a memory limit, the cluster's memory limit is shown instead");
       }, function() {
         testLimitToUsageRatio($scope.cpuUsage, $scope.cpuLimit, $http, function() {
           cpuLimit = $scope.cpuLimitFallback;
-          $rootScope.addAlert("cpu limit");
+          $scope.messages.push("This entity does not have a CPU limit, the cluster's CPU limit is shown instead");
         }, function() {
           define_poll();
           $controller('ChartViewController', {$scope: $scope});
@@ -220,14 +227,14 @@ function pollStats(statsLink, $scope, $http){
     $scope.mem.day.average = Math.round($scope.mem.day.average / 1048576)
     $scope.mem.day.ninetieth = Math.round($scope.mem.day.ninetieth / 1048576)
     $scope.mem.day.max = Math.round($scope.mem.day.max / 1048576)
-    console.log($scope.mem);
   });
 }
 
 // pollUtilization calculates the utilization of a metric, 
 // given a usage link and a limit link.
 // The resulting utilization is placed under  $scope.data[idx]
-function pollUtilization(usageLink, limitLink, $scope, idx,  $http){
+// The last values of the limit is placed under $scope[lastLimit]
+function pollUtilization(usageLink, limitLink, $scope, idx, lastLimitKey, $http, post_process){
   if (!$scope.run) return;
   var usage = [];
   var limit = [];
@@ -257,6 +264,13 @@ function pollUtilization(usageLink, limitLink, $scope, idx,  $http){
                 limit.unshift({x: Date.parse(data.metrics[i].timestamp), 
                   y: data.metrics[i].value});
               }
+
+              // Update the last limit value
+              var lastLimit = limit[0];
+              if (!!lastLimit) {
+                $scope[lastLimitKey] = post_process(lastLimit.y);
+              }
+              
               limit_stamp = data.latestTimestamp;
               // Use the usage and limit arrays to calculate utilization percentage.
               // Store in the appropriate time-ascending $scope.data array
@@ -265,6 +279,8 @@ function pollUtilization(usageLink, limitLink, $scope, idx,  $http){
                   $scope.data[idx]["values"].push({x: usage[i].x, y: (usage[i].y / limit[i].y)});
                 }
               }
+
+
               var usage_time = Date.parse(usage_stamp);
               var limit_time = Date.parse(limit_stamp);
               if (usage_time > limit_time) {
