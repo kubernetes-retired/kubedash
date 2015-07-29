@@ -66,6 +66,7 @@ angular.module('kubedash').controller('ChartViewController',
             staggerLabels:true
           },
           x2Axis: {
+            axisLabel: 'Time Range Selection',
             tickFormat: function(d) {
               return d3.time.format('%X')(new Date(d));
             }
@@ -111,14 +112,21 @@ angular.module('kubedash').controller('UtilizationViewController',
 
       $scope.data = [{key: 'Memory Utilization', area: true, values:[]}];
       $scope.data.push({key: 'CPU Utilization', area: true, values:[]});
+      $scope.messages = [];
 
       var memLimit = $scope.memLimit;
       var cpuLimit = $scope.cpuLimit;
 
+      // Initialize the last limit values
+      $scope.lastMemLimit = 0;
+      $scope.lastCPULimit = 0;
+
       var define_poll = function () {
         $scope.poll = function() {
-          pollUtilization($scope.memUsage, memLimit, $scope, 0, $http);
-          pollUtilization($scope.cpuUsage, cpuLimit, $scope, 1, $http);
+          pollUtilization($scope.memUsage, memLimit, $scope, 0, "lastMemLimit", $http, function(limit) {
+            return Math.round(limit / 1048576);
+          });
+          pollUtilization($scope.cpuUsage, cpuLimit, $scope, 1, "lastCPULimit", $http, function(x){return x;});
           pollStats($scope.stats, $scope, $http);
         };
       }
@@ -133,11 +141,11 @@ angular.module('kubedash').controller('UtilizationViewController',
       } 
       testLimitToUsageRatio($scope.memUsage, $scope.memLimit, $http, function() {
         memLimit = $scope.memLimitFallback;
-        $rootScope.addAlert("memory limit");
+        $scope.messages.push("This entity does not have a memory limit, the cluster's memory limit is shown instead");
       }, function() {
         testLimitToUsageRatio($scope.cpuUsage, $scope.cpuLimit, $http, function() {
           cpuLimit = $scope.cpuLimitFallback;
-          $rootScope.addAlert("cpu limit");
+          $scope.messages.push("This entity does not have a CPU limit, the cluster's CPU limit is shown instead");
         }, function() {
           define_poll();
           $controller('ChartViewController', {$scope: $scope});
@@ -182,29 +190,51 @@ function testLimitToUsageRatio(usageLink, limitLink, $http, change_callback, nex
       });
 }
 
+// secondsToDHMS converts a number of seconds to a string
+// formatted as "3d 21h 5m 34s"
+function secondsToDHMS(totalSeconds) {
+  var days = Math.floor(totalSeconds / 86400);
+  totalSeconds %= 3600;
+  var hours = Math.floor(totalSeconds / 3600);
+  totalSeconds %= 3600;
+  var minutes = Math.floor(totalSeconds / 60);
+  var seconds = totalSeconds % 60;
+  var res = ""
+  if (days > 0) {
+    res += days.toString() + "d "
+  }
+  res += hours.toString() + "h " + minutes.toString() + "m " + seconds.toString() + "s"
+  return res
+}
+
 // pollStats appends the derived stats for cpu and memory to $scope.
 function pollStats(statsLink, $scope, $http){
   if (!$scope.run) return;
   $http.get(statsLink).success(function(data) {
-    $scope.cpu = data["cpu-usage"];
-    $scope.mem = data["memory-usage"];
-    $scope.mem.Minute.Average = Math.round($scope.mem.Minute.Average / 1048576)
-    $scope.mem.Minute.Ninetieth = Math.round($scope.mem.Minute.Ninetieth / 1048576)
-    $scope.mem.Minute.Max = Math.round($scope.mem.Minute.Max / 1048576)
-    $scope.mem.Hour.Average = Math.round($scope.mem.Hour.Average / 1048576)
-    $scope.mem.Hour.Ninetieth = Math.round($scope.mem.Hour.Ninetieth / 1048576)
-    $scope.mem.Hour.Max = Math.round($scope.mem.Hour.Max / 1048576)
-    $scope.mem.Day.Average = Math.round($scope.mem.Day.Average / 1048576)
-    $scope.mem.Day.Ninetieth = Math.round($scope.mem.Day.Ninetieth / 1048576)
-    $scope.mem.Day.Max = Math.round($scope.mem.Day.Max / 1048576)
-    console.log($scope.mem);
+    if (!("uptime" in data)) {
+      // Empty Stats
+      return;
+    }
+    $scope.uptime = secondsToDHMS(data["uptime"]);
+    $scope.cpu = data["stats"]["cpu-usage"];
+    $scope.mem = data["stats"]["memory-working"];
+    $scope.mem.minute.average = Math.round($scope.mem.minute.average / 1048576)
+    $scope.mem.minute.ninetieth = Math.round($scope.mem.minute.ninetieth / 1048576)
+    $scope.mem.minute.max = Math.round($scope.mem.minute.max / 1048576)
+    $scope.mem.hour.average = Math.round($scope.mem.hour.average / 1048576)
+    $scope.mem.hour.ninetieth = Math.round($scope.mem.hour.ninetieth / 1048576)
+    $scope.mem.hour.max = Math.round($scope.mem.hour.max / 1048576)
+    $scope.mem.day.average = Math.round($scope.mem.day.average / 1048576)
+    $scope.mem.day.ninetieth = Math.round($scope.mem.day.ninetieth / 1048576)
+    $scope.mem.day.max = Math.round($scope.mem.day.max / 1048576)
   });
 }
 
 // pollUtilization calculates the utilization of a metric, 
 // given a usage link and a limit link.
 // The resulting utilization is placed under  $scope.data[idx]
-function pollUtilization(usageLink, limitLink, $scope, idx,  $http){
+// The last values of the limit is placed under $scope[lastLimit]
+function pollUtilization(usageLink, limitLink, $scope, idx, lastLimitKey, $http, post_process){
   if (!$scope.run) return;
   var usage = [];
   var limit = [];
@@ -234,6 +264,13 @@ function pollUtilization(usageLink, limitLink, $scope, idx,  $http){
                 limit.unshift({x: Date.parse(data.metrics[i].timestamp), 
                   y: data.metrics[i].value});
               }
+
+              // Update the last limit value
+              var lastLimit = limit[0];
+              if (!!lastLimit) {
+                $scope[lastLimitKey] = post_process(lastLimit.y);
+              }
+              
               limit_stamp = data.latestTimestamp;
               // Use the usage and limit arrays to calculate utilization percentage.
               // Store in the appropriate time-ascending $scope.data array
@@ -242,6 +279,8 @@ function pollUtilization(usageLink, limitLink, $scope, idx,  $http){
                   $scope.data[idx]["values"].push({x: usage[i].x, y: (usage[i].y / limit[i].y)});
                 }
               }
+
+
               var usage_time = Date.parse(usage_stamp);
               var limit_time = Date.parse(limit_stamp);
               if (usage_time > limit_time) {
