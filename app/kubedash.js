@@ -14,5 +14,5 @@
 
 'use strict';
 
-var app = angular.module('kubedash', ['nvd3', 'ngRoute']);
+var app = angular.module('kubedash', ['nvd3', 'ngRoute', 'ngTable']);
 

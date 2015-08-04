@@ -44,7 +44,7 @@ angular.module('kubedash').controller('ChartViewController',
     function($scope, $interval) {
       $scope.options = {
         chart: {
-          type: 'lineWithFocusChart',
+          type: 'lineChart',
           height: 400,
           margin : {
             top: 20,
@@ -65,46 +65,32 @@ angular.module('kubedash').controller('ChartViewController',
             },
             staggerLabels:true
           },
-          x2Axis: {
-            axisLabel: 'Time Range Selection',
-            tickFormat: function(d) {
-              return d3.time.format('%X')(new Date(d));
-            }
-          },
           yAxis: {
             axisLabel: 'Utilization',
             tickFormat: function(d) {
               return d3.format('%')(d3.round(d, 3));
             }
           },
-          y2Axis: {
-            tickFormat: function(d) {
-              return d3.format('%')(d3.round(d, 3));
-            }
+          title: {
+            enable: true,
+            text: "Utilization"
           }
-
         }
       };
 
       $scope.stamp = (new Date(0)).toISOString();
       $scope.run = true;
 
-      // Poll for new data every 10 seconds
-      $scope.pollPromise = $interval($scope.poll, 10000);
+      // Poll for new data every 30 seconds
+      $scope.pollPromise = $interval($scope.poll, 30000);
 
       // Trigger the first poll as soon as content is loaded
       $scope.$watch('$viewContentLoaded', $scope.poll);
 
       $scope.$on('$destroy', function () {
         $interval.cancel($scope.pollPromise);
-
-        // Destroy all d3 entites
-        d3.select('#utilchart').remove();
-        $scope.options = null;
-        $scope.data = [];
-        $scope.chart = null;
+        $scope.items = [];
       });
-
     });
 
 angular.module('kubedash').controller('UtilizationViewController', 
@@ -122,6 +108,7 @@ angular.module('kubedash').controller('UtilizationViewController',
       $scope.lastCPULimit = 0;
 
       var define_poll = function () {
+        $scope.limitDecided = true;
         $scope.poll = function() {
           pollUtilization($scope.memUsage, memLimit, $scope, 0, "lastMemLimit", $http, function(limit) {
             return Math.round(limit / 1048576);
@@ -133,19 +120,23 @@ angular.module('kubedash').controller('UtilizationViewController',
 
       // Populate scope.poll only if the limit is sane, compared to the usage.
       // Otherwise, use the fallback limit.
-      // TODO: show which limit was used in the UI
       if ((!$scope.memLimitFallback) && (!$scope.cpuLimitFallback)) {
         define_poll();
         $controller('ChartViewController', {$scope: $scope});
-        return
+        return;
       } 
+
       testLimitToUsageRatio($scope.memUsage, $scope.memLimit, $http, function() {
         memLimit = $scope.memLimitFallback;
-        $scope.messages.push("This entity does not have a memory limit, the cluster's memory limit is shown instead");
+        if ($scope.messages.length == 0) {
+          $scope.messages.push("This entity does not have a memory limit, the cluster's memory limit is shown instead");
+        }
       }, function() {
         testLimitToUsageRatio($scope.cpuUsage, $scope.cpuLimit, $http, function() {
           cpuLimit = $scope.cpuLimitFallback;
-          $scope.messages.push("This entity does not have a CPU limit, the cluster's CPU limit is shown instead");
+          if ($scope.messages.length <= 1) {
+            $scope.messages.push("This entity does not have a CPU limit, the cluster's CPU limit is shown instead");
+          }
         }, function() {
           define_poll();
           $controller('ChartViewController', {$scope: $scope});
@@ -182,7 +173,8 @@ function testLimitToUsageRatio(usageLink, limitLink, $http, change_callback, nex
 
               limit = data.metrics[data.metrics.length - 1].value;
 
-              if (usage < limit/200) {
+              // The limit is invalid if it's 0, or less than 0.001% of a given non-zero usage
+              if (((usage > 0) && (usage < limit/1000)) || (limit == 0)) {
                 change_callback();
               }
               next_callback();
@@ -211,21 +203,20 @@ function secondsToDHMS(totalSeconds) {
 function pollStats(statsLink, $scope, $http){
   if (!$scope.run) return;
   $http.get(statsLink).success(function(data) {
-    if (!("uptime" in data)) {
+    if (!("uptime" in data) || !(data["stats"]["memory-working"])) {
       // Empty Stats
       return;
     }
     $scope.uptime = secondsToDHMS(data["uptime"]);
-    $scope.cpu = data["stats"]["cpu-usage"];
-    $scope.mem = data["stats"]["memory-working"];
+    $scope.cpu = data["stats"]["cpu-usage"]; $scope.mem = data["stats"]["memory-working"];
     $scope.mem.minute.average = Math.round($scope.mem.minute.average / 1048576)
-    $scope.mem.minute.ninetieth = Math.round($scope.mem.minute.ninetieth / 1048576)
+    $scope.mem.minute.percentile = Math.round($scope.mem.minute.percentile / 1048576)
     $scope.mem.minute.max = Math.round($scope.mem.minute.max / 1048576)
     $scope.mem.hour.average = Math.round($scope.mem.hour.average / 1048576)
-    $scope.mem.hour.ninetieth = Math.round($scope.mem.hour.ninetieth / 1048576)
+    $scope.mem.hour.percentile = Math.round($scope.mem.hour.percentile / 1048576)
     $scope.mem.hour.max = Math.round($scope.mem.hour.max / 1048576)
     $scope.mem.day.average = Math.round($scope.mem.day.average / 1048576)
-    $scope.mem.day.ninetieth = Math.round($scope.mem.day.ninetieth / 1048576)
+    $scope.mem.day.percentile = Math.round($scope.mem.day.percentile / 1048576)
     $scope.mem.day.max = Math.round($scope.mem.day.max / 1048576)
   });
 }
@@ -240,6 +231,7 @@ function pollUtilization(usageLink, limitLink, $scope, idx, lastLimitKey, $http,
   var limit = [];
   var usage_stamp = $scope.stamp;
   var limit_stamp = $scope.stamp;
+
   // Get Metric Usage and store in the time-descending usage array .
   $http.get(usageLink + $scope.stamp)
       .success(function(data) {
@@ -280,7 +272,6 @@ function pollUtilization(usageLink, limitLink, $scope, idx, lastLimitKey, $http,
                 }
               }
 
-
               var usage_time = Date.parse(usage_stamp);
               var limit_time = Date.parse(limit_stamp);
               if (usage_time > limit_time) {
@@ -292,3 +283,64 @@ function pollUtilization(usageLink, limitLink, $scope, idx, lastLimitKey, $http,
             })
       });
 };
+
+// pollListing polls a listing API endpoint.
+function pollListing(listLink, $scope, $http, callback){
+  if (!$scope.run2) return;
+  $http.get(listLink).success(function(data) {
+    if (data.length == 0) {
+      return;
+    }
+    for (var i=0; i < data.length; i++) {
+      data[i].memUsage = Math.round(data[i].memUsage / 1048576);
+    }
+    $scope.items = data;
+    callback();
+  });
+}
+
+// listingController uses $scope.listLink to provide an ng-table sortable listing page
+angular.module('kubedash').controller('ListingController', 
+    function($scope, $http, $interval, $filter, NgTableParams) {
+      $scope.items = [];
+      $scope.sortItems = function(order) {
+          $scope.items = $filter('orderBy')($scope.items, order);
+      };
+
+      $scope.tableParams = new NgTableParams({
+        page: 1,
+        count: 200,
+        sorting: {
+          memUsage: 'desc'
+        }
+      }, {
+        total: $scope.items.length,
+        getData: function($defer, params) {
+          $scope.sortItems(params.orderBy());
+          // TODO(afein): if using pagination, switched to $defer per page
+          //$defer.resolve(orderedData.slice((params.page() - 1) * params.count(), params.page() * params.count()));
+        }
+      });
+
+      $scope.pollList = function() {
+        pollListing($scope.listLink, $scope, $http, function() {
+          $scope.sortItems($scope.tableParams.orderBy());
+        });
+      };
+
+      $scope.run2 = true;
+
+      // Poll for new items every 30 seconds
+      $scope.pollPromiseList = $interval($scope.pollList, 30000);
+
+      // Trigger the first poll as soon as content is loaded
+      // Force initial sorting by descending memory usage
+      $scope.$watch('$viewContentLoaded', function() {
+        $scope.pollList();
+      });
+
+      $scope.$on('$destroy', function () {
+        $interval.cancel($scope.pollPromiseList);
+      });
+
+    });

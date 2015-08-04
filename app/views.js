@@ -15,42 +15,57 @@
 'use strict';
 
 // clusterUtil controls the utilization chart and derived stats of the Cluster page
-angular.module('kubedash').controller('clusterUtil', function($scope, $controller) {
+angular.module('kubedash').controller('clusterUtil', function($scope, $location, $controller) {
   $scope.memUsage = 'api/v1/model/metrics/memory-working?start=';
   $scope.memLimit = 'api/v1/model/metrics/memory-limit?start=';
   $scope.cpuUsage = 'api/v1/model/metrics/cpu-usage?start=';
   $scope.cpuLimit = 'api/v1/model/metrics/cpu-limit?start=';
   $scope.stats = 'api/v1/model/stats';
+
+  $scope.listLink = 'api/v1/model/namespaces/';
+  $scope.$location = $location;
+  $scope.goTo = function(ns) {
+    $scope.$location.path("/namespace/" + ns);
+  };
+  $controller('ListingController', {$scope: $scope});
   $controller('UtilizationViewController', {$scope: $scope});
 });
 
 // nodeUtil controls the utilization chart and derived stats of the Node page.
-angular.module('kubedash').controller('nodeUtil', function($scope, $controller, $routeParams) {
+angular.module('kubedash').controller('nodeUtil', function($scope, $location, $controller, $routeParams) {
   $scope.hostname = $routeParams.name;
   $scope.memUsage = 'api/v1/model/nodes/' + $scope.hostname + '/metrics/memory-working?start=';
   $scope.memLimit = 'api/v1/model/nodes/' + $scope.hostname + '/metrics/memory-limit?start=';
   $scope.cpuUsage = 'api/v1/model/nodes/' + $scope.hostname + '/metrics/cpu-usage?start=';
   $scope.cpuLimit = 'api/v1/model/nodes/' + $scope.hostname + '/metrics/cpu-limit?start=';
   $scope.stats = 'api/v1/model/nodes/' + $scope.hostname + '/stats';
+
+  $scope.listLink = 'api/v1/model/nodes/' + $scope.hostname + '/pods';
+  $scope.$location = $location;
+  $scope.goTo = function(nspod) {
+    var tokens = nspod.split("/")
+    $scope.$location.path("/namespace/" + tokens[0] + "/pod/" + tokens[1]);
+  };
+  $controller('ListingController', {$scope: $scope});
   $controller('UtilizationViewController', {$scope: $scope});
+});
+
+// freeContainerListing controls the listing of free containers in the Node page
+angular.module('kubedash').controller('freeContainerListing', function($scope, $location, $controller, $routeParams) {
+  $scope.hostname = $routeParams.name;
+  $scope.$location = $location;
+  $scope.listLink = 'api/v1/model/nodes/' + $scope.hostname + '/freecontainers';
+  $scope.goTo = function(ctr) {
+    $scope.$location.path("/node/" + $scope.hostname + "/freecontainer/" + ctr);
+  };
+  $controller('ListingController', {$scope: $scope});
 });
 
 // namespaceUtil controls the utilization chart and derived stats of the Namespace page.
 angular.module('kubedash').controller('namespaceUtil',  
-      function($scope, $controller, $http, $routeParams) {
-        
+      function($scope, $controller, $http, $routeParams, $location) {
   $scope.ns = $routeParams.name;
-
-  // Populate Pods list
-  $scope.items = [];
-  var nsPods = 'api/v1/model/namespaces/' + $scope.ns + '/pods';
-  $http.get(nsPods).success(function(data) {
-    if (data.length == 0) {
-      // No Nodes are available, postpone
-      return;
-    }
-    $scope.items = data;
-  });
+  $scope.$location = $location;
 
   $scope.memUsage = 'api/v1/model/namespaces/' + $scope.ns + '/metrics/memory-working?start=';
   $scope.memLimit = 'api/v1/model/namespaces/' + $scope.ns + '/metrics/memory-limit?start=';
@@ -60,28 +75,23 @@ angular.module('kubedash').controller('namespaceUtil',
   $scope.cpuLimitFallback = 'api/v1/model/metrics/cpu-limit?start=';
   $scope.stats = 'api/v1/model/namespaces/' + $scope.ns + '/stats';
   $controller('UtilizationViewController', {$scope: $scope});
+
+  $scope.listLink = 'api/v1/model/namespaces/' + $scope.ns + '/pods';
+  $scope.goTo = function(ns, pod) {
+    $scope.$location.path("/namespace/" + ns + "/pod/" + pod);
+  };
+  $controller('ListingController', {$scope: $scope});
+  $controller('UtilizationViewController', {$scope: $scope});
 });
 
 // podUtil controls the utilization chart and derived stats of the Pod page.
 angular.module('kubedash').controller('podUtil',  
-      function($scope, $controller, $routeParams, $http) {
+      function($scope, $location, $controller, $routeParams, $http) {
 
   $scope.ns = $routeParams.namespace;
   $scope.podname = $routeParams.podname;
   var prefix = 'api/v1/model/namespaces/' + $scope.ns + 
           '/pods/' + $scope.podname;
-
-  // Populate Containers list
-  self.items = [];
-  $scope.items = [];
-  var podContainers = prefix + '/containers';
-  $http.get(podContainers).success(function(data) {
-    if (data.length == 0) {
-      // No Nodes are available, postpone
-      return;
-    }
-    $scope.items = data;
-  });
 
   $scope.memUsage = prefix + '/metrics/memory-working?start=';
   $scope.memLimit = prefix + '/metrics/memory-limit?start=';
@@ -90,9 +100,16 @@ angular.module('kubedash').controller('podUtil',
   $scope.cpuLimit = prefix + '/metrics/cpu-limit?start=';
   $scope.cpuLimitFallback = 'api/v1/model/metrics/cpu-limit?start=';
   $scope.stats = prefix + '/stats';
+
+  $scope.$location = $location
+  $scope.listLink = prefix + '/containers';
+  $scope.goTo = function(container) {
+    $scope.$location.path("/namespace/" + $scope.ns + "/pod/" + $scope.podname + "/container/" + container);
+  };
+
+  $controller('ListingController', {$scope: $scope});
   $controller('UtilizationViewController', {$scope: $scope});
 });
-
 
 // podContainerUtil controls the utilization chart and stats of the Pod Container page.
 angular.module('kubedash').controller('podContainerUtil',  
@@ -103,11 +120,27 @@ angular.module('kubedash').controller('podContainerUtil',
   $scope.containername = $routeParams.containername;
   $scope.containerPath = $scope.ns + ' / ' + $scope.podname + ' / ' + $scope.containername;
 
+  var prefix = 'api/v1/model/namespaces/' + $scope.ns + '/pods/' + $scope.podname + '/containers/' + $scope.containername;
+  $scope.memUsage = prefix + '/metrics/memory-working?start=';
+  $scope.memLimit = prefix + '/metrics/memory-limit?start=';
+  $scope.memLimitFallback = 'api/v1/model/metrics/memory-limit?start=';
+  $scope.cpuUsage = prefix + '/metrics/cpu-usage?start=';
+  $scope.cpuLimit = prefix + '/metrics/cpu-limit?start=';
+  $scope.cpuLimitFallback = 'api/v1/model/metrics/cpu-limit?start=';
+  $scope.stats = prefix + '/stats';
+  $controller('UtilizationViewController', {$scope: $scope});
+});
+
+// freeContainerUtil controls the utilization chart and stats of the Free Container page.
+angular.module('kubedash').controller('freeContainerUtil',  
+      function($scope, $controller, $routeParams) {
+
+  $scope.hostname = $routeParams.hostname;
+  $scope.containername = $routeParams.containername;
+  $scope.containerPath = $scope.hostname + ' / ' + $scope.containername;
+
   // Populate Containers list
-  self.items = [];
-  $scope.items = [];
-  var prefix = 'api/v1/model/namespaces/' + $scope.ns + 
-          '/pods/' + $scope.podname + '/containers/' + $scope.containername;
+  var prefix = 'api/v1/model/nodes/' + $scope.hostname + '/freecontainers/' + $scope.containername;
 
   $scope.memUsage = prefix + '/metrics/memory-working?start=';
   $scope.memLimit = prefix + '/metrics/memory-limit?start=';
@@ -121,29 +154,22 @@ angular.module('kubedash').controller('podContainerUtil',
 
 
 // allNodes controls the view of the node selection page
-// TODO(afein): sort by usage/utilization
-angular.module('kubedash').controller('allNodes', ['$scope', '$http', function($scope, $http) {
-  $scope.items = [];
-  var allNodes = "api/v1/model/nodes/";
-  $http.get(allNodes).success(function(data) {
-    if (data.length == 0) {
-      // No Nodes are available, postpone
-      return;
-    }
-    $scope.items = data;
-  });
-}]);
+angular.module('kubedash').controller('allNodes', function($scope, $controller, $location) {
+  $scope.listLink = "api/v1/model/nodes/";
+  $scope.$location = $location
+  $scope.goTo = function(nodename) {
+    $scope.$location.path("/node/" + nodename);
+  };
+
+  $controller('ListingController', {$scope: $scope});
+});
 
 // allNamespaces controls the view of the namespace selection page
-// TODO(afein): sort by usage/utilization
-angular.module('kubedash').controller('allNamespaces', function($scope, $http) {
-  $scope.items = [];
-  var allNamespaces = "api/v1/model/namespaces/";
-  $http.get(allNamespaces).success(function(data) {
-    if (data.length == 0) {
-      // No Nodes are available, postpone
-      return;
-    }
-    $scope.items = data;
-  });
+angular.module('kubedash').controller('allNamespaces', function($scope, $controller, $location) {
+  $scope.listLink = "api/v1/model/namespaces/";
+  $scope.$location = $location
+  $scope.goTo = function(ns) {
+    $scope.$location.path("/namespace/" + ns);
+  };
+  $controller('ListingController', {$scope: $scope});
 });
