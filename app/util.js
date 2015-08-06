@@ -134,7 +134,7 @@ angular.module('kubedash').controller('UtilizationViewController',
       }, function() {
         testLimitToUsageRatio($scope.cpuUsage, $scope.cpuLimit, $http, function() {
           cpuLimit = $scope.cpuLimitFallback;
-          if ($scope.messages.length <= 1) {
+          if ($scope.messages.length <= 2) {
             $scope.messages.push("This entity does not have a CPU limit, the cluster's CPU limit is shown instead");
           }
         }, function() {
@@ -203,7 +203,7 @@ function secondsToDHMS(totalSeconds) {
 function pollStats(statsLink, $scope, $http){
   if (!$scope.run) return;
   $http.get(statsLink).success(function(data) {
-    if (!("uptime" in data) || !(data["stats"]["memory-working"])) {
+    if (!data || !("uptime" in data) || !(data["stats"]["memory-working"])) {
       // Empty Stats
       return;
     }

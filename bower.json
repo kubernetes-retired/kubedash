@@ -1,7 +1,7 @@
 {
   "name": "kubedash",
   "version": "0.0.0",
-  "homepage": "https://github.com/GoogleCloudPlatform/kubedash",
+  "homepage": "https://github.com/kubernetes/kubedash",
   "authors": [
     "Alex Mavrogiannis <almavrog@google.com>"
   ],
