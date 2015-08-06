@@ -14,3 +14,5 @@ Some of the use-cases are:
 
 Kubedash is based on three components: a cluster-level metric aggregator, a web server and a browser frontend. 
 [Heapster](http://github.com/GoogleCloudPlatform/heapster) is used as the metric aggregator. Heapster runs as part of a service in all default kubernetes clusters.Heapster is being extended to calculate aggregated metrics and statistics relevant for analytics, which would be exposed through a REST API to the web server. Kubedash provides the other two pieces - a web server relaying REST calls, managing sockets and providing additional authentication and a frontend to provide visualizations for the aggregated metrics and statistics of interest.
+
+Testing cla bot
