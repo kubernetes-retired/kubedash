@@ -1,0 +1,18 @@
+sudo: false
+
+language: go
+
+go:
+    - 1.4
+
+install:
+    - mkdir -p $HOME/gopath/src/github.com/kubernetes
+    - cd $HOME/gopath/src/github.com/kubernetes/kubedash
+    - go get github.com/tools/godep
+    - go get github.com/axw/gocov/gocov
+    - go get golang.org/x/tools/cmd/cover
+    - go get github.com/mattn/goveralls
+
+script:
+    - export PATH=$PATH:$HOME/gopath/bin
+    - make build

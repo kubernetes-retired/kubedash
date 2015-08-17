@@ -21,9 +21,10 @@ if [ ! -e $REF_FILE ]; then
 fi
 
 LINES=$(cat "${REF_FILE}" | wc -l | tr -d ' ')
-GO_FILES=$(find . -not -wholename "*Godeps*" -name "*.go")
+GO_FILES=$(find . -name "*.go" | grep -v -e "Godeps" -e "third_party")
+GO_FILES=$(find . -name "*.js" | grep -v -e "Godeps" -e "third_party")
 
-for FILE in ${GO_FILES}; do
+for FILE in ${GO_FILES} ${JS_FILES}; do
   DIFFER=$(cat "${FILE}" | sed 's/2015/2014/g' | head "-${LINES}" | diff -q - "${REF_FILE}")
 
   if [[ ! -z "${DIFFER}" ]]; then
