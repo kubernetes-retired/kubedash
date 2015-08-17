@@ -20,12 +20,16 @@ To use Kubedash, the following are required:
 - Heapster v0.18.0 is running as the `monitoring-heapster` service on the `default` namespace.
 - kubectl.sh is on the current user's PATH.
 
-The following command will create the Kubedash pod:
+NOTE: Heapster v0.18.0 has not been released as of yet. Please use these [Deployment files](https://github.com/afein/heapster/tree/model11/deploy/kube-config/kubedash) to launch Heapster until that release
+becomes available. The upcoming release is expected to feature a significantly lower memory footprint for the Heapster Pod and improved metric accuracy.
+
+
+After cloning this repository, use the following command to create the Kubedash pod:
 
 `kubectl.sh create -f deploy/kube-config/`
 
 To access the Kubedash UI, visit the following URL: `https://<kubernetes-master>/api/v1/proxy/namespaces/default/services/kubedash/`
-where <kubernetes-master> is the IP address of the cluster's master.
+where `<kubernetes-master>` is the IP address of the kubernetes master node.
 
 ## Implementation
 
