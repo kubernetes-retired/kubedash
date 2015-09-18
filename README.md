@@ -24,7 +24,7 @@ To use Kubedash, the following are required:
 
 After cloning this repository, use the following command to create the Kubedash pod:
 
-`kubectl.sh create -f deploy/kube-config/`
+`kubectl create -f deploy/kube-config.yam`
 
 To access the Kubedash UI, visit the following URL: `https://<kubernetes-master>/api/v1/proxy/namespaces/default/services/kubedash/`
 where `<kubernetes-master>` is the IP address of the kubernetes master node.

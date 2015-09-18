@@ -129,7 +129,7 @@ angular.module('kubedash').controller('UtilizationViewController',
       testLimitToUsageRatio($scope.memUsage, $scope.memLimit, $http, function() {
         memLimit = $scope.memLimitFallback;
         if ($scope.messages.length == 0) {
-          $scope.messages.push("This entity does not have a memory limit, the cluster's memory limit is shown instead");
+          $scope.messages.push("This entity does not have a memory limit, the node's memory limit is shown instead");
         }
       }, function() {
         testLimitToUsageRatio($scope.cpuUsage, $scope.cpuLimit, $http, function() {

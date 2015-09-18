@@ -1,6 +1,6 @@
 all: build
-TAG = v0.0.1
-PREFIX = grc.io/kubedash
+TAG = v0.0.2
+PREFIX = gcr.io/google-containers
 
 deps:
 	go get github.com/tools/godep
