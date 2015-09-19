@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "homepage": "https://github.com/kubernetes/kubedash",
   "authors": [
-    "Alex Mavrogiannis <almavrog@google.com>"
+    "Alex Mavrogiannis <almavrog@gmail.com>"
   ],
   "license": "Apache 2.0",
   "dependencies": {

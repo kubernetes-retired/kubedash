@@ -24,7 +24,7 @@ To use Kubedash, the following are required:
 
 After cloning this repository, use the following command to create the Kubedash pod:
 
-`kubectl create -f deploy/kube-config.yam`
+`kubectl create -f deploy/kube-config.yaml`
 
 To access the Kubedash UI, visit the following URL: `https://<kubernetes-master>/api/v1/proxy/namespaces/default/services/kubedash/`
 where `<kubernetes-master>` is the IP address of the kubernetes master node.
@@ -35,6 +35,6 @@ Kubedash is based on three components-
 
 [Heapster](http://github.com/kubernetes/heapster) provides the data for Kubedash.
 Heapster runs as a service by default in all kubernetes clusters, collecting metrics and analytics for individual containers.
-The [Heapster Model](https://github.com/kubernetes/heapster/blob/master/docs/model.md) exposes aggregated metrics and statistics that are relevant for cluster-level analytics through a RESTful API. 
+The [Heapster Model](https://github.com/kubernetes/heapster/blob/master/docs/model.md) exposes aggregated metrics and statistics that are relevant for cluster-level analytics through a RESTful API.
 
 Kubedash provides the other two pieces - a web server relaying REST calls, managing sockets and providing additional authentication and, a frontend to provide visualizations for the aggregated metrics and statistics of interest.

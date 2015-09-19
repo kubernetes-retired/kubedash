@@ -23,7 +23,7 @@ ADD third_party/ng-table/dist/ng-table.min.js /static/js/
 
 # Add third party CSS files under /static
 ADD third_party/bootstrap/dist/css/bootstrap.min.css /static/css/
-ADD third_party/custom_bootstrap/main.css /static/css/	
+ADD third_party/custom_bootstrap/main.css /static/css/
 ADD third_party/nvd3/build/nv.d3.css /static/css/
 ADD third_party/ng-table/dist/ng-table.min.css /static/css/
 
