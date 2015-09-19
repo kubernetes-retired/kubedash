@@ -8,7 +8,7 @@ deps:
 build: clean deps sanitize
 	GOOS=linux GOARCH=amd64 GCO_ENABLED=0 godep go build -a .
 
-clean: 
+clean:
 	rm -f kubedash
 
 container: build
