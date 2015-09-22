@@ -28,7 +28,7 @@ var (
 	argIp              = flag.String("listen_ip", "", "IP to listen on, defaults to all IPs")
 	argHeadless        = flag.Bool("headless", false, "Headless mode should be enabled if the dashboard is running outside of a Kubernetes cluster")
 	argHeapsterURL     = flag.String("heapster_url", "", "URL of the Heapster API. Used only during headless mode")
-	argHeapsterService = flag.String("heapster_service", "monitoring-heapster", "Name of the Heapster service")
+	argHeapsterService = flag.String("heapster_service", "heapster", "Name of the Heapster service")
 )
 
 // main is the driver function of Kubedash.

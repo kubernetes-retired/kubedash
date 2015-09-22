@@ -54,8 +54,8 @@ func apiHandler(c *gin.Context) {
 	metric_url := heapster_url + uri
 	resp, err := http.Get(metric_url)
 	if err != nil {
-		// Unable to corectly perform GET, restart the kubedash pod
-		glog.Fatalf("unable to GET %s", metric_url)
+		glog.Errorf("unable to GET %s - %v", metric_url, err)
+		return
 	}
 	if resp.StatusCode != 200 {
 		glog.Errorf("GET %s responded with status code: %d", metric_url, resp.StatusCode)
