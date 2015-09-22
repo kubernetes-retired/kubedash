@@ -1,5 +1,5 @@
 all: build
-TAG = v0.0.2
+TAG = v0.2.1
 PREFIX = gcr.io/google-containers
 
 deps:
