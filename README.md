@@ -20,13 +20,13 @@ Future features include the following:
 
 To use Kubedash, the following are required:
 - A Kubernetes cluster of v1.0 or higher is operational and accessible from kubectl.
-- Heapster v0.18.0 is running as the `monitoring-heapster` service on the `default` namespace.
+- Heapster v0.18.0 is running as the `monitoring-heapster` service on the `kube-system` namespace.
 
 After cloning this repository, use the following command to create the Kubedash pod:
 
 `kubectl create -f deploy/kube-config.yaml`
 
-To access the Kubedash UI, visit the following URL: `https://<kubernetes-master>/api/v1/proxy/namespaces/default/services/kubedash/`
+To access the Kubedash UI, visit the following URL: `https://<kubernetes-master>/api/v1/proxy/namespaces/kube-system/services/kubedash/`
 where `<kubernetes-master>` is the IP address of the kubernetes master node.
 
 ## Implementation
