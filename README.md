@@ -1,9 +1,9 @@
 # kubedash
 Performance analytics UI for [Kubernetes](http://github.com/GoogleCloudPlatform/kubernetes) Clusters.
 
-The goal of Kubedash it to allow the user or an administrator of a Kubernetes cluster to easily verify and understand the performance of a cluster and jobs running within it through intuitive visualizations of aggregated metrics, derived stats and event patterns.
+The goal of Kubedash is to allow the user or an administrator of a Kubernetes cluster to easily verify and understand the performance of a cluster and jobs running within it through intuitive visualizations of aggregated metrics, derived stats and event patterns.
 It is not intended to be a general-purpose Kubernetes UI.
-Instead, kubedash uses multiple sources of information to summarize and provide high-level analytic information to users and the cluster administrator.
+Instead, kubedash uses multiple sources of information to summarize and provide high-level analytic information to users and to the cluster administrator.
 
 Some of the current features are:
 - Resource utilization views of Cluster, Nodes, Namespaces, Pods and Containers for the past 1 hour.
@@ -38,3 +38,11 @@ Heapster runs as a service by default in all kubernetes clusters, collecting met
 The [Heapster Model](https://github.com/kubernetes/heapster/blob/master/docs/model.md) exposes aggregated metrics and statistics that are relevant for cluster-level analytics through a RESTful API.
 
 Kubedash provides the other two pieces - a web server relaying REST calls, managing sockets and providing additional authentication and, a frontend to provide visualizations for the aggregated metrics and statistics of interest.
+
+##License
+
+  The work done has been licensed under Apache License 2.0.The license file can be found
+  [here](https://github.com/kubernetes/kubedash/blob/master/LICENSE).
+  You can find out more about license,at
+  
+    http://www.apache.org/licenses/LICENSE-2.0
