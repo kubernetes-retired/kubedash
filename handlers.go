@@ -57,12 +57,12 @@ func apiHandler(c *gin.Context) {
 		glog.Errorf("unable to GET %s - %v", metric_url, err)
 		return
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
 		glog.Errorf("GET %s responded with status code: %d", metric_url, resp.StatusCode)
 		return
 	}
 
-	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		glog.Errorf("unable to read response body from %s", metric_url)
