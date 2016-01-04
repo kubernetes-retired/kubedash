@@ -274,11 +274,12 @@ function pollUtilization(usageLink, limitLink, $scope, idx, lastLimitKey, $http,
 
               var usage_time = Date.parse(usage_stamp);
               var limit_time = Date.parse(limit_stamp);
+              // Need to normalize time by time zone offsets
               if (usage_time > limit_time) {
-                $scope.stamp = usage_stamp;
+                $scope.stamp = (new Date(usage_time)).toISOString();
                 console.log("usage stamp is greater than limit stamp");
               } else {
-                $scope.stamp = limit_stamp;
+                $scope.stamp = (new Date(limit_time)).toISOString();
               }
             })
       });
