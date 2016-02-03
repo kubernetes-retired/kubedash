@@ -17,6 +17,7 @@ package main
 import (
 	"io/ioutil"
 	"net/http"
+	"path"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang/glog"
@@ -26,25 +27,33 @@ import (
 // heapster_url is a package global to provide visibility to all handlers.
 var heapster_url string
 
+// base_url is the prefix for URL paths in this service.
+var base_url string
+
+// rootPath returns URL location prefixed with root.
+func urlPath(location string) string {
+	return path.Join(base_url, location)
+}
+
 // setupHandlers creates a gin Engine with configured routes, static files and templates.
 func setupHandlers(url string) *gin.Engine {
 	heapster_url = url
 	r := gin.Default()
-	r.Static("/static", "./static")
-	r.Static("/pages", "./pages")
+	r.Static(urlPath("/static"), "./static")
+	r.Static(urlPath("/pages"), "./pages")
 
 	// Load the base template
 	r.LoadHTMLGlob("pages/index.html")
 
 	// Configure routes
-	r.GET("/", indexHandler)
-	r.GET("/api/*uri", apiHandler)
+	r.GET(base_url, indexHandler)
+	r.GET(urlPath("/api/*uri"), apiHandler)
 	return r
 }
 
 // indexHandler renders the base index html template.
 func indexHandler(c *gin.Context) {
-	vars := gin.H{}
+	vars := gin.H{"base": base_url}
 	c.HTML(200, "index.html", vars)
 }
 
