@@ -17,6 +17,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net/url"
 	"os"
 	"path"
 	"strings"
@@ -42,10 +43,18 @@ func main() {
 	glog.Infof("Kubedash version 0.0.1")
 	glog.Infof("Starting kubedash on port %d", *argPort)
 
+	var err error = nil
 	if !*argHeadless {
-		heapster_url = fmt.Sprintf("http://%s", *argHeapsterService)
+		raw_url := fmt.Sprintf("http://%s", *argHeapsterService)
+		heapster_url, err = url.ParseRequestURI(raw_url)
 	} else {
-		heapster_url = *argHeapsterURL
+		raw_url := *argHeapsterURL
+		heapster_url, err = url.ParseRequestURI(raw_url)
+	}
+
+	if err != nil {
+		glog.Fatalf("Error parsing heapster URL: %s", err)
+		os.Exit(1)
 	}
 
 	base_url = *argBaseUrl
@@ -53,7 +62,7 @@ func main() {
 		base_url = path.Join("/", base_url) + "/"
 	}
 
-	r := setupHandlers(heapster_url)
+	r := setupHandlers()
 
 	addr := fmt.Sprintf("%s:%d", *argIp, *argPort)
 	r.Run(addr)
