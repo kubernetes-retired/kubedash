@@ -17,6 +17,9 @@ package main
 import (
 	"io/ioutil"
 	"net/http"
+	"net/url"
+	"path"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang/glog"
@@ -24,34 +27,58 @@ import (
 
 // heapster_url is an http://IP:Port route where Heapster is available.
 // heapster_url is a package global to provide visibility to all handlers.
-var heapster_url string
+var heapster_url *url.URL
+
+// base_url is the prefix for URL paths in this service.
+var base_url string
+
+// rootPath returns URL location prefixed with root.
+func urlPath(location string) string {
+	return path.Join(base_url, location)
+}
 
 // setupHandlers creates a gin Engine with configured routes, static files and templates.
-func setupHandlers(url string) *gin.Engine {
-	heapster_url = url
+func setupHandlers() *gin.Engine {
 	r := gin.Default()
-	r.Static("/static", "./static")
-	r.Static("/pages", "./pages")
+	r.Static(urlPath("/static"), "./static")
+	r.Static(urlPath("/pages"), "./pages")
 
 	// Load the base template
 	r.LoadHTMLGlob("pages/index.html")
 
 	// Configure routes
-	r.GET("/", indexHandler)
-	r.GET("/api/*uri", apiHandler)
+	r.GET(base_url, indexHandler)
+	r.GET(urlPath("/api/*uri"), apiHandler)
 	return r
 }
 
 // indexHandler renders the base index html template.
 func indexHandler(c *gin.Context) {
-	vars := gin.H{}
+	vars := gin.H{"base": base_url}
 	c.HTML(200, "index.html", vars)
+}
+
+// metricURL translates request's URI into a heapster URL.
+func metricUrl(uri string) (string, error) {
+	query_path := strings.TrimPrefix(uri, base_url)
+	query_url, err := url.Parse(query_path)
+	if err != nil {
+		return "", err
+	}
+	heapster_url.Path = query_url.Path
+	heapster_url.RawQuery = query_url.RawQuery
+	heapster_url.Fragment = query_url.Fragment
+	return heapster_url.String(), nil
 }
 
 // apiHandler proxies all requests on /api/* to the Heapster API, using the same request URI.
 func apiHandler(c *gin.Context) {
 	uri := c.Request.RequestURI
-	metric_url := heapster_url + uri
+	metric_url, err := metricUrl(uri)
+	if err != nil {
+		glog.Errorf("Malformed URI: %s - %v", uri, err)
+		return
+	}
 	resp, err := http.Get(metric_url)
 	if err != nil {
 		glog.Errorf("unable to GET %s - %v", metric_url, err)

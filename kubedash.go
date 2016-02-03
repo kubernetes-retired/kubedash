@@ -17,7 +17,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net/url"
 	"os"
+	"path"
 	"strings"
 
 	"github.com/golang/glog"
@@ -29,6 +31,7 @@ var (
 	argHeadless        = flag.Bool("headless", false, "Headless mode should be enabled if the dashboard is running outside of a Kubernetes cluster")
 	argHeapsterURL     = flag.String("heapster_url", "", "URL of the Heapster API. Used only during headless mode")
 	argHeapsterService = flag.String("heapster_service", "heapster", "Name of the Heapster service")
+	argBaseUrl         = flag.String("base_url", "/", "Base URL path for Kubedash")
 )
 
 // main is the driver function of Kubedash.
@@ -40,13 +43,26 @@ func main() {
 	glog.Infof("Kubedash version 0.0.1")
 	glog.Infof("Starting kubedash on port %d", *argPort)
 
+	var err error = nil
 	if !*argHeadless {
-		heapster_url = fmt.Sprintf("http://%s", *argHeapsterService)
+		raw_url := fmt.Sprintf("http://%s", *argHeapsterService)
+		heapster_url, err = url.ParseRequestURI(raw_url)
 	} else {
-		heapster_url = *argHeapsterURL
+		raw_url := *argHeapsterURL
+		heapster_url, err = url.ParseRequestURI(raw_url)
 	}
 
-	r := setupHandlers(heapster_url)
+	if err != nil {
+		glog.Fatalf("Error parsing heapster URL: %s", err)
+		os.Exit(1)
+	}
+
+	base_url = *argBaseUrl
+	if base_url != "/" {
+		base_url = path.Join("/", base_url) + "/"
+	}
+
+	r := setupHandlers()
 
 	addr := fmt.Sprintf("%s:%d", *argIp, *argPort)
 	r.Run(addr)
