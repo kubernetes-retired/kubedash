@@ -45,7 +45,7 @@ The [Heapster Model](https://github.com/kubernetes/heapster/blob/master/docs/mod
 
 Kubedash provides the other two pieces - a web server relaying REST calls, managing sockets and providing additional authentication and, a frontend to provide visualizations for the aggregated metrics and statistics of interest.
 
-Heapster in Kubernetes 1.2 is not compatibile with the current version of Kubedash. For Kuberentes 1.2 we suggest deploying Kubedash
+Heapster in Kubernetes 1.2 is not compatibile with the current version of Kubedash. For Kubernetes 1.2 we suggest deploying Kubedash
 with an older Heapster version running inside a single Pod. See [this](deploy/bundle.yaml) for details.
 
 ##License
