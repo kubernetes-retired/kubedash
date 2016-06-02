@@ -24,7 +24,7 @@ To use Kubedash, the following are required:
 
 After cloning this repository, use the following command to create the Kubedash pod:
 
-For Kubernets 1.0 and 1.1:
+For Kubernetes 1.0 and 1.1:
 
 `kubectl create -f deploy/kube-config.yaml`
 
